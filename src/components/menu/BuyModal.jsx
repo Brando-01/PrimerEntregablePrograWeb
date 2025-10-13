@@ -1,31 +1,22 @@
-// components/menu/BuyModal.tsx - VERSIÓN MÁGICA
 import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import ConfirmationModal from './ConfirmationModal';
-import type { Game, ShippingAddress, PaymentMethod, Order } from '../types';
 import { useOrder } from '../context/OrderContext';
 import { useUser } from '../context/UserContext';
 import { getUserSession, isLoggedIn } from '../../utils/session';
 import { useNavigate } from 'react-router-dom';
 
-interface BuyModalProps {
-  visible: boolean;
-  onClose: () => void;
-  cartItems: Game[];
-  onOrderComplete: () => void;
-}
-
-const BuyModal: React.FC<BuyModalProps> = ({ visible, onClose, cartItems, onOrderComplete }) => {
+const BuyModal = ({ visible, onClose, cartItems, onOrderComplete }) => {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
-  const [paymentMethod, setPaymentMethod] = useState<'credit-card' | 'qr' | 'paypal'>('credit-card');
+  const [paymentMethod, setPaymentMethod] = useState('credit-card');
   const { addOrder } = useOrder();
   const { users, updateUser } = useUser();
   const navigate = useNavigate();
 
-  const [shippingAddress, setShippingAddress] = useState<ShippingAddress>({
+  const [shippingAddress, setShippingAddress] = useState({
     fullName: '',
     email: '',
     phone: '',
@@ -42,19 +33,19 @@ const BuyModal: React.FC<BuyModalProps> = ({ visible, onClose, cartItems, onOrde
     cardHolder: ''
   });
 
-  const [mapPosition, setMapPosition] = useState<{ lat: number; lng: number } | null>(null);
+  const [mapPosition, setMapPosition] = useState(null);
 
   // Fix default marker icon path (Leaflet + Vite)
-  delete (L.Icon.Default.prototype as any)._getIconUrl;
+  // Use import.meta.url + new URL(...) so Vite resolves asset paths correctly
+  delete L.Icon.Default.prototype._getIconUrl;
   L.Icon.Default.mergeOptions({
-    iconRetinaUrl: '/node_modules/leaflet/dist/images/marker-icon-2x.png',
-    iconUrl: '/node_modules/leaflet/dist/images/marker-icon.png',
-    shadowUrl: '/node_modules/leaflet/dist/images/marker-shadow.png'
+    iconRetinaUrl: new URL('leaflet/dist/images/marker-icon-2x.png', import.meta.url).href,
+    iconUrl: new URL('leaflet/dist/images/marker-icon.png', import.meta.url).href,
+    shadowUrl: new URL('leaflet/dist/images/marker-shadow.png', import.meta.url).href
   });
 
   useEffect(() => {
     if (visible) {
-      // si el usuario no ha iniciado sesión, redirigir al login y cerrar modal
       if (!isLoggedIn()) {
         alert('Debes iniciar sesión para iniciar el ritual. Serás redirigido a la página de inicio de sesión.');
         onClose();
@@ -70,7 +61,8 @@ const BuyModal: React.FC<BuyModalProps> = ({ visible, onClose, cartItems, onOrde
         address: '',
         city: '',
         country: 'Reino Mágico',
-        zipCode: ''
+        zipCode: '',
+        shippingMethod: 'Aero' // nuevo campo: Aero, Maritimo, Terrestre
       });
       setCardData({
         cardNumber: '',
@@ -83,12 +75,11 @@ const BuyModal: React.FC<BuyModalProps> = ({ visible, onClose, cartItems, onOrde
 
   if (!visible || cartItems.length === 0) return null;
 
-  // Calcular totales
-  const subtotal = cartItems.reduce((sum, item) => sum + item.price, 0);
+  const subtotal = cartItems.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0);
   const shippingCost = 5.00;
   const total = subtotal + shippingCost;
 
-  const handleShippingSubmit = (e: React.FormEvent) => {
+  const handleShippingSubmit = (e) => {
     e.preventDefault();
     
     if (!shippingAddress.fullName.trim()) {
@@ -111,7 +102,7 @@ const BuyModal: React.FC<BuyModalProps> = ({ visible, onClose, cartItems, onOrde
     setCurrentStep(2);
   };
 
-  const handlePaymentSubmit = (e: React.FormEvent) => {
+  const handlePaymentSubmit = (e) => {
     e.preventDefault();
     
     if (paymentMethod === 'credit-card') {
@@ -136,7 +127,7 @@ const BuyModal: React.FC<BuyModalProps> = ({ visible, onClose, cartItems, onOrde
     setCurrentStep(4);
   };
 
-  const handleFinalSubmit = (e: React.FormEvent) => {
+  const handleFinalSubmit = (e) => {
     e.preventDefault();
     
     if (cartItems.length === 0) {
@@ -145,14 +136,13 @@ const BuyModal: React.FC<BuyModalProps> = ({ visible, onClose, cartItems, onOrde
       return;
     }
 
-    // Crear la orden mágica
     const orderItems = cartItems.map(item => ({
       game: item,
-      quantity: 1,
+      quantity: item.quantity || 1,
       price: item.price
     }));
 
-    const paymentData: PaymentMethod = {
+    const paymentData = {
       type: paymentMethod,
       ...(paymentMethod === 'credit-card' && {
         cardNumber: cardData.cardNumber.slice(-4),
@@ -163,7 +153,7 @@ const BuyModal: React.FC<BuyModalProps> = ({ visible, onClose, cartItems, onOrde
     const session = getUserSession();
     const sessionUserId = session?.username || session?.fullName || null;
 
-    const newOrder: Order = {
+    const newOrder = {
       id: 'RITUAL-' + Date.now(),
       userId: sessionUserId || ('guest-' + Math.random().toString(36).substr(2, 9)),
       items: orderItems,
@@ -171,6 +161,7 @@ const BuyModal: React.FC<BuyModalProps> = ({ visible, onClose, cartItems, onOrde
       shippingCost: shippingCost,
       total: total,
       shippingAddress: shippingAddress,
+  shippingMethod: shippingAddress.shippingMethod || 'Aero',
       paymentMethod: paymentData,
       statusHistory: [
         {
@@ -190,9 +181,7 @@ const BuyModal: React.FC<BuyModalProps> = ({ visible, onClose, cartItems, onOrde
       trackingNumber: 'GRIMO-' + Math.random().toString(36).substr(2, 9).toUpperCase()
     };
 
-    // Guardar orden mágica
     addOrder(newOrder);
-    // Actualizar totales del usuario (si existe en el sistema)
     try {
       if (sessionUserId) {
         const matchedUser = users.find(u => (
@@ -216,7 +205,7 @@ const BuyModal: React.FC<BuyModalProps> = ({ visible, onClose, cartItems, onOrde
     }, 2000);
   };
 
-  const handleMapSubmit = (e: React.FormEvent) => {
+  const handleMapSubmit = (e) => {
     e.preventDefault();
     if (!mapPosition) {
       alert('Por favor selecciona tu ubicación en el mapa');
@@ -229,10 +218,9 @@ const BuyModal: React.FC<BuyModalProps> = ({ visible, onClose, cartItems, onOrde
     setCurrentStep(3);
   };
 
-  // Componente interno: manejar clicks en el mapa para establecer la posición
-  const MapClickHandler: React.FC<{ setMapPosition: (p: { lat: number; lng: number } | null) => void }> = ({ setMapPosition }) => {
+  const MapClickHandler = ({ setMapPosition }) => {
     useMapEvents({
-      click(e: any) {
+      click(e) {
         const { lat, lng } = e.latlng || e.latLng || { lat: e.lat, lng: e.lng };
         setMapPosition({ lat: lat, lng: lng });
       }
@@ -240,19 +228,15 @@ const BuyModal: React.FC<BuyModalProps> = ({ visible, onClose, cartItems, onOrde
     return null;
   };
 
-  // Componente interno: marcador arrastrable
-  const DraggableMarker: React.FC<{ position: { lat: number; lng: number }; setPosition: (p: { lat: number; lng: number } | null) => void }> = ({ position, setPosition }) => {
+  const DraggableMarker = ({ position, setPosition }) => {
     const [pos, setPos] = useState(position);
     useEffect(() => setPos(position), [position]);
-    // Marker from react-leaflet expects a LatLngExpression
     return (
-      // @ts-ignore react-leaflet Marker typings
       <Marker
-        position={[pos.lat, pos.lng] as any}
-        // @ts-ignore
+        position={[pos.lat, pos.lng]}
         draggable
         eventHandlers={{
-          dragend: (e: any) => {
+          dragend: (e) => {
             const marker = e.target;
             const latlng = marker.getLatLng();
             const newPos = { lat: latlng.lat, lng: latlng.lng };
@@ -282,11 +266,11 @@ const BuyModal: React.FC<BuyModalProps> = ({ visible, onClose, cartItems, onOrde
     return true;
   };
 
-  const formatCardNumber = (value: string) => {
+  const formatCardNumber = (value) => {
     return value.replace(/\s/g, '').replace(/(\d{4})/g, '$1 ').trim();
   };
 
-  const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCardNumberChange = (e) => {
     const formatted = formatCardNumber(e.target.value.replace(/\D/g, ''));
     setCardData(prev => ({ ...prev, cardNumber: formatted }));
   };
@@ -378,22 +362,31 @@ const BuyModal: React.FC<BuyModalProps> = ({ visible, onClose, cartItems, onOrde
                         </select>
                       </div>
                     </div>
+                    <div className="row mt-3">
+                      <div className="col-md-6 mb-3">
+                        <label className="form-label">🚚 Método de envío</label>
+                        <select
+                          className="form-select"
+                          value={shippingAddress.shippingMethod || 'Aero'}
+                          onChange={(e) => setShippingAddress(prev => ({ ...prev, shippingMethod: e.target.value }))}
+                        >
+                          <option value="Aero">Aero</option>
+                          <option value="Maritimo">Marítimo</option>
+                          <option value="Terrestre">Terrestre</option>
+                        </select>
+                      </div>
+                    </div>
                   </div>
                 )}
 
-                {/* Paso 2: Selección de Ubicación de Envío (OpenStreetMap / Leaflet) */}
+                {/* Paso 2: Selección de Ubicación de Envío */}
                 {currentStep === 2 && (
                   <div>
                     <h6>🗺️ Selecciona tu ubicación de envío</h6>
                     <p>Haz clic en el mapa para seleccionar o arrastra el marcador.</p>
                     <div style={{ width: '100%', height: '400px' }}>
-                      {/* @ts-ignore */}
                       <MapContainer center={mapPosition ? [mapPosition.lat, mapPosition.lng] : [19.4326, -99.1332]} zoom={12} style={{ height: '100%', width: '100%' }}>
-                        {/* @ts-ignore */}
-                        {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
-                        {/* @ts-ignore */}
                         <TileLayer
-                          // @ts-ignore
                           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                         />
@@ -536,13 +529,11 @@ const BuyModal: React.FC<BuyModalProps> = ({ visible, onClose, cartItems, onOrde
                         <div className="bg-light p-4 d-inline-block">
                           <div style={{ width: '150px', height: '150px', backgroundColor: '#ddd' }} className="d-flex align-items-center justify-content-center">
                             <img 
-  src="/img/QR.jpg" 
-  alt="QR" 
-  style={{ width: "150px", height: "auto" }} 
-/>
-
+                              src="/img/QR.jpg" 
+                              alt="QR" 
+                              style={{ width: "150px", height: "auto" }} 
+                            />
                             <span>⚡ SÍMBOLOS ARCANOS ⚡</span>
-                            
                           </div>
                         </div>
                         <p className="text-muted mt-3">
@@ -606,7 +597,7 @@ const BuyModal: React.FC<BuyModalProps> = ({ visible, onClose, cartItems, onOrde
                   </button>
                 ) : (
                   <button type="submit" className="btn btn-success">
-                    ✅ Confirmar Ritual
+                    ✅ Completar Orden
                   </button>
                 )}
               </div>
