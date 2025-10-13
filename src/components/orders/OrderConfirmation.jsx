@@ -1,13 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useOrder } from '../context/OrderContext';
-import type { Order } from '../types';
 
-interface OrderConfirmationProps {
-  onContinueShopping: () => void;
-}
-
-const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ onContinueShopping }) => {
+const OrderConfirmation = ({ onContinueShopping }) => {
   const navigate = useNavigate();
   const { currentOrder, orders, clearCurrentOrder } = useOrder();
 
