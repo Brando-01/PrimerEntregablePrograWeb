@@ -1,22 +1,7 @@
-// components/menu/CartPanel.tsx - VERSIÓN MÁGICA
 import React from 'react';
-import type { Game } from '../types';
 import '../../assets/juego.css';
 
-interface CartPanelProps {
-  visible: boolean;
-  onClose: () => void;
-  items: Game[];
-  savedItems: Game[];
-  onRemove: (id: number) => void;
-  onRemoveSaved: (id: number) => void;
-  onSaveForLater: (game: Game) => void;
-  onMoveToCart: (game: Game) => void;
-  onClearSaved: () => void;
-  onBuy: () => void;
-}
-
-const CartPanel: React.FC<CartPanelProps> = ({ 
+const CartPanel = ({ 
   visible, 
   onClose, 
   items, 
@@ -26,14 +11,16 @@ const CartPanel: React.FC<CartPanelProps> = ({
   onSaveForLater,
   onMoveToCart,
   onClearSaved,
-  onBuy 
+  onBuy,
+  onIncrementQuantity,
+  onDecrementQuantity
 }) => {
   if (!visible) return null;
 
-  const total = items.reduce((sum, item) => sum + item.price, 0);
+  const total = items.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0);
 
   return (
-    <div className="cart-panel">
+    <div className="cart-panel" style={{ width: '520px', maxWidth: '95%' }}>
       <div className="card shadow-lg border-0">
         <div className="card-header bg-dark text-white">
           <h5 className="card-title mb-0">📜 Grimorio de Hechizos</h5>
@@ -75,7 +62,14 @@ const CartPanel: React.FC<CartPanelProps> = ({
                         <h6 className="mb-1 fw-bold">{item.title}</h6>
                         <p className="text-muted small mb-1">{item.category}</p>
                         <div className="d-flex align-items-center justify-content-between">
-                          <strong className="text-success">${item.price.toFixed(2)}</strong>
+                          <div className="d-flex align-items-center gap-3">
+                            <strong className="text-success">${item.price.toFixed(2)}</strong>
+                            <div className="input-group input-group-sm" style={{ width: '120px' }}>
+                              <button className="btn btn-outline-secondary" type="button" onClick={() => (onDecrementQuantity ? onDecrementQuantity(item.id) : null)}>-</button>
+                              <input type="text" readOnly className="form-control text-center" value={item.quantity || 1} />
+                              <button className="btn btn-outline-secondary" type="button" onClick={() => (onIncrementQuantity ? onIncrementQuantity(item.id) : null)}>+</button>
+                            </div>
+                          </div>
                           <div className="btn-group btn-group-sm">
                             <button 
                               className="btn btn-outline-warning"
@@ -101,11 +95,11 @@ const CartPanel: React.FC<CartPanelProps> = ({
             )}
           </div>
 
-          {/* Sección: Hechizos Guardados */}
+          {/* Sección: Guardado para Despues */}
           <div className="mb-4">
             <div className="d-flex justify-content-between align-items-center mb-3">
               <h6 className="text-warning mb-0">
-                💾 Hechizos Guardados
+                💾 Guardado para Despues
                 {savedItems.length > 0 && <span className="badge bg-warning ms-2">{savedItems.length}</span>}
               </h6>
               {savedItems.length > 0 && (
@@ -120,7 +114,7 @@ const CartPanel: React.FC<CartPanelProps> = ({
             </div>
             
             {savedItems.length === 0 ? (
-              <p className="text-muted small">No tienes hechizos guardados para después</p>
+              <p className="text-muted small">No tienes Guardado para Despues</p>
             ) : (
               <div className="list-group list-group-flush">
                 {savedItems.map((item) => (
