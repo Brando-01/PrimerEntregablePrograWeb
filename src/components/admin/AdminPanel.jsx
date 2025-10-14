@@ -1,12 +1,10 @@
-// components/admin/AdminPanel.tsx - VERSIÓN MÁGICA
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '../context/GameContext';
 import { useUser } from '../context/UserContext';
 import EditNotice from './EditNotice';
 import '../../assets/estiloAdminNoticias.css';
 import { noticiasIniciales } from '../data/noticias';
-import type { Noticia } from '../data/noticias';
 import NoticeTable from './NoticeTable';
 import DeleteNotice from './DeleteNotice';
 import AddNotice from './AddNotice';
@@ -14,32 +12,25 @@ import FilterGamesModal from './FilterGamesModal';
 import AdminGameModal from './AdminGameModal';
 import GameModalAdmin from './GameModalAdmin';
 import MonthlyEarningsChart from './MonthlyEarningsChart';
-import type { Game } from '../types';
+import { useOrder } from '../context/OrderContext';
+import DateRangeEarnings from './DateRangeEarnings';
 
-type FilterData = {
-  fecha: string;
-  categoria: string;
-  precioMin: string;
-  precioMax: string;
-};
-
-const AdminPanel: React.FC = () => {
+const AdminPanel = () => {
   // Función de logout
   const handleLogout = () => {
     localStorage.removeItem('userSession');
     navigate('/login');
   };
 
-  // ...existing code...
   const { users, toggleUserStatus } = useUser();
   const { games, deleteGame, toggleGameStatus } = useGame();
-  const [activeSection, setActiveSection] = useState<"usuarios" | "juegos" | "noticias" | "estadisticas">("usuarios");
+  const [activeSection, setActiveSection] = useState("usuarios");
   const navigate = useNavigate();
   
   // Estados para modales
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [noticeToEdit, setNoticeToEdit] = useState({ id: '', title: '', content: '', image: '' });
-  const [noticias, setNoticias] = useState<Noticia[]>(() => {
+  const [noticias, setNoticias] = useState(() => {
     const stored = localStorage.getItem('noticias');
     if (stored) {
       return [...noticiasIniciales, ...JSON.parse(stored)];
@@ -47,15 +38,15 @@ const AdminPanel: React.FC = () => {
     return noticiasIniciales;
   });
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
-  const [noticeToDelete, setNoticeToDelete] = useState<{ id: string }>({ id: '' });
+  const [noticeToDelete, setNoticeToDelete] = useState({ id: '' });
   const [addModalVisible, setAddModalVisible] = useState(false);
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [gameModalVisible, setGameModalVisible] = useState(false);
-  const [gameToEdit, setGameToEdit] = useState<Game | null>(null);
+  const [gameToEdit, setGameToEdit] = useState(null);
   
   // NUEVO ESTADO: Modal avanzado de administración
   const [gameAdminModalVisible, setGameAdminModalVisible] = useState(false);
-  const [selectedGameForAdmin, setSelectedGameForAdmin] = useState<Game | null>(null);
+  const [selectedGameForAdmin, setSelectedGameForAdmin] = useState(null);
 
   // Estados para filtros
   const [userFilter, setUserFilter] = useState('');
@@ -65,11 +56,11 @@ const AdminPanel: React.FC = () => {
     activo: 'todos'
   });
 
-  const handleApplyFilters = (filters: FilterData) => {
+  const handleApplyFilters = (filters) => {
     console.log("Filtros aplicados:", filters);
   };
 
-  const handleDeleteRequest = (id: string) => {
+  const handleDeleteRequest = (id) => {
     setNoticeToDelete({ id });
     setDeleteModalVisible(true);
   };
@@ -83,8 +74,8 @@ const AdminPanel: React.FC = () => {
     setDeleteModalVisible(false);
   };
 
-  const handleAddNotice = (title: string, content: string, image: string) => {
-    const nuevaNoticia: Noticia = {
+  const handleAddNotice = (title, content, image) => {
+    const nuevaNoticia = {
       id: crypto.randomUUID(),
       title,
       content,
@@ -100,7 +91,7 @@ const AdminPanel: React.FC = () => {
     setAddModalVisible(false);
   };
 
-  const handleOpenEdit = (id: string) => {
+  const handleOpenEdit = (id) => {
     const noticia = noticias.find(n => n.id === id);
     if (noticia) {
       setNoticeToEdit({ id: noticia.id, title: noticia.title, content: noticia.content, image: noticia.image });
@@ -108,7 +99,7 @@ const AdminPanel: React.FC = () => {
     }
   };
 
-  const handleEditSubmit = (id: string, title: string, content: string, image: string) => {
+  const handleEditSubmit = (id, title, content, image) => {
     setNoticias(prev => {
       const updated = prev.map(n =>
         n.id === id ? { ...n, title, content, image } : n
@@ -119,7 +110,7 @@ const AdminPanel: React.FC = () => {
     setEditModalVisible(false);
   };
 
-  const showSection = (section: typeof activeSection) => {
+  const showSection = (section) => {
     setActiveSection(section);
   };
 
@@ -139,30 +130,30 @@ const AdminPanel: React.FC = () => {
     return true;
   });
 
-  const handleDeleteGame = (gameId: number) => {
+  const handleDeleteGame = (gameId) => {
     if (window.confirm('¿Estás seguro de que quieres disipar este poder?')) {
       deleteGame(gameId);
     }
   };
 
-  const handleEditGame = (game: Game) => {
+  const handleEditGame = (game) => {
     setGameToEdit(game);
     setGameModalVisible(true);
   };
 
   // NUEVA FUNCIÓN: Abrir modal avanzado de administración
-  const handleAdminGame = (game: Game) => {
+  const handleAdminGame = (game) => {
     setSelectedGameForAdmin(game);
     setGameAdminModalVisible(true);
   };
 
-  const getStatusBadge = (isActive: boolean) => {
+  const getStatusBadge = (isActive) => {
     return isActive ? 
       <span className="badge bg-success">Activo</span> : 
       <span className="badge bg-danger">Sellado</span>;
   };
 
-  const getFeaturedBadge = (featured: boolean) => {
+  const getFeaturedBadge = (featured) => {
     return featured ? 
       <span className="badge bg-warning ms-1">⭐ Legendario</span> : 
       null;
@@ -612,17 +603,17 @@ const AdminPanel: React.FC = () => {
                   </div>
                 </div>
               </div>
-              <div className="col-md-6 mb-4">
-                <div className="card shadow-sm">
-                  <div className="card-header bg-light">
-                    <h5 className="mb-0">📰 Profecías por Luna</h5>
-                  </div>
-                  <div className="card-body">
-                    <canvas id="newsByMonthChart" height={200}></canvas>
-                    <p className="text-muted text-center mt-3">Ciclo de revelaciones místicas</p>
-                  </div>
-                </div>
-              </div>
+                    <div className="col-md-6 mb-4">
+                      <div className="card shadow-sm">
+                        <div className="card-header bg-light">
+                          <h5 className="mb-0">Resumen</h5>
+                        </div>
+                        <div className="card-body">
+                          {/* Resumen de ganancias: por defecto muestra ganancias del día actual. Permite filtrar por rango de fechas. */}
+                          <DateRangeEarnings />
+                        </div>
+                      </div>
+                    </div>
             </div>
           </section>
         )}
