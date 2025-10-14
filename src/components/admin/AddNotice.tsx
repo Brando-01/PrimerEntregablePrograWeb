@@ -1,18 +1,12 @@
 import React, { useState } from 'react';
 import '../../assets/estiloAdminNoticias.css';
 
-interface AddNoticeProps {
-  visible: boolean;
-  onClose: () => void;
-  onSubmit: (title: string, content: string, image: string) => void;
-}
-
-const AddNotice: React.FC<AddNoticeProps> = ({ visible, onClose, onSubmit }) => {
+const AddNotice = ({ visible, onClose, onSubmit }) => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [image, setImage] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     if (title.trim() && content.trim() && image.trim()) {
       onSubmit(title, content, image);
