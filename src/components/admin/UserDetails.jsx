@@ -1,20 +1,16 @@
-// components/admin/UserDetails.tsx - VERSIÓN CORREGIDA
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useUser } from '../context/UserContext'; // ✅ Nueva importación
+import { useUser } from '../context/UserContext';
 import { useOrder } from '../context/OrderContext';
-import type { User, Order } from '../types';
 
-const UserDetails: React.FC = () => {
+const UserDetails = () => {
   const { userId } = useParams();
   const navigate = useNavigate();
-  const { getUserById } = useUser(); // ✅ Usar el contexto
+  const { getUserById } = useUser();
   const { orders } = useOrder();
 
-  // ✅ CORREGIDO: Buscar usuario en el contexto
   const user = getUserById(userId || '');
 
-  // Filtrar órdenes del usuario (máximo 10)
   const userOrders = orders
     .filter(order => order.userId === `user${userId}` || order.userId === userId)
     .slice(0, 10)
@@ -37,7 +33,7 @@ const UserDetails: React.FC = () => {
     );
   }
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status) => {
     const statusConfig = {
       pending: { class: 'bg-warning', text: 'Pendiente' },
       confirmed: { class: 'bg-info', text: 'Confirmado' },
@@ -46,15 +42,12 @@ const UserDetails: React.FC = () => {
       cancelled: { class: 'bg-danger', text: 'Cancelado' }
     };
     
-    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
+    const config = statusConfig[status] || statusConfig.pending;
     return <span className={`badge ${config.class}`}>{config.text}</span>;
   };
 
   const toggleUserStatus = () => {
-    // ✅ Esto ahora funcionará porque usa el contexto
     if (window.confirm(`¿Estás seguro de que quieres ${user.isActive ? 'desactivar' : 'activar'} a ${user.fullName}?`)) {
-      // Aquí iría la lógica real para cambiar el estado
-      // Nota: Necesitaríamos agregar toggleUserStatus al useUser hook
       alert(`Usuario ${user.isActive ? 'desactivado' : 'activado'} correctamente`);
     }
   };
@@ -251,5 +244,6 @@ const UserDetails: React.FC = () => {
     </div>
   );
 };
+
 
 export default UserDetails;
