@@ -1,0 +1,372 @@
+.wave-letter {
+  display: inline-block;
+  animation: waveLetterAnim 2.6s infinite ease-in-out;
+}
+@keyframes waveLetterAnim {
+  0% { transform: translateY(0); }
+  20% { transform: translateY(-12px); }
+  40% { transform: translateY(0); }
+  60% { transform: translateY(8px); }
+  80% { transform: translateY(0); }
+  100% { transform: translateY(0); }
+}
+.hero-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.hero-title-white {
+  color: #fff !important;
+  background: none !important;
+  -webkit-background-clip: unset !important;
+  background-clip: unset !important;
+  text-shadow: 0 0 18px #f7c873, 0 0 36px #a5b4fc;
+}
+.hero-subtitle-gray {
+  color: #cbd5e1 !important;
+}
+/* assets/magic-theme.css */
+:root {
+  /* Colores principales mágicos */
+  --magic-purple: #6b46c1;
+  --magic-dark: #1a202c;
+  --magic-darker: #0d1117;
+  --magic-blue: #3182ce;
+  --magic-teal: #38b2ac;
+  --magic-gold: #d69e2e;
+  --magic-pink: #d53f8c;
+  
+  /* Gradientes mágicos */
+  --gradient-magic: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --gradient-fire: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  --gradient-water: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  --gradient-earth: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  --gradient-arcane: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+}
+
+/* Fondo mágico para toda la aplicación */
+.magic-bg {
+  background: linear-gradient(135deg, var(--magic-darker) 0%, var(--magic-dark) 50%, #2d3748 100%);
+  min-height: 100vh;
+}
+
+/* Navbar mágico */
+.navbar-magic {
+  background: rgba(26, 32, 44, 0.95) !important;
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--magic-purple);
+  box-shadow: 0 4px 20px rgba(107, 70, 193, 0.3);
+}
+
+.navbar-magic .navbar-brand {
+  color: var(--magic-gold) !important;
+  font-weight: bold;
+  text-shadow: 0 0 10px rgba(214, 158, 46, 0.5);
+}
+
+/* Botones mágicos */
+.btn-magic {
+  background: var(--gradient-magic);
+  border: none;
+  color: white;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(107, 70, 193, 0.4);
+}
+
+.btn-magic:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(107, 70, 193, 0.6);
+  color: white;
+}
+
+.btn-fire {
+  background: var(--gradient-fire);
+  border: none;
+  color: white;
+}
+
+.btn-water {
+  background: var(--gradient-water);
+  border: none;
+  color: white;
+}
+
+.btn-earth {
+  background: var(--gradient-earth);
+  border: none;
+  color: white;
+}
+
+/* Cards mágicas */
+.card-magic {
+  background: rgba(45, 55, 72, 0.8);
+  border: 1px solid rgba(107, 70, 193, 0.3);
+  border-radius: 15px;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  color: white;
+}
+
+.card-magic:hover {
+  transform: translateY(-5px);
+  border-color: var(--magic-purple);
+  box-shadow: 0 10px 30px rgba(107, 70, 193, 0.4);
+}
+
+/* Badges mágicos */
+.badge-magic {
+  background: var(--gradient-magic);
+  color: white;
+  font-weight: bold;
+}
+
+.badge-fire {
+  background: var(--gradient-fire);
+  color: white;
+}
+
+.badge-water {
+  background: var(--gradient-water);
+  color: white;
+}
+
+.badge-air {
+  background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+  color: #2d3748;
+}
+
+.badge-earth {
+  background: var(--gradient-earth);
+  color: white;
+}
+
+/* Efectos de texto mágico */
+.text-magic {
+  background: linear-gradient(45deg, var(--magic-gold), var(--magic-pink));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-glow {
+  text-shadow: 0 0 10px currentColor;
+}
+
+/* Animaciones mágicas */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 5px rgba(107, 70, 193, 0.5); }
+  50% { box-shadow: 0 0 20px rgba(107, 70, 193, 0.8); }
+}
+
+@keyframes sparkle {
+  0% { opacity: 0; transform: scale(0); }
+  50% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0); }
+}
+
+.float-animation {
+  animation: float 3s ease-in-out infinite;
+}
+
+.glow-animation {
+  animation: glow 2s ease-in-out infinite;
+}
+
+/* Efectos de partículas mágicas */
+.magic-particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: var(--magic-gold);
+  border-radius: 50%;
+  animation: sparkle 2s infinite;
+}
+
+/* Scrollbar mágico */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--magic-dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--gradient-magic);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--magic-purple);
+}
+/* Agregar esto al final de magic-theme.css */
+
+/* Botones mágicos específicos */
+.btn-magic-secondary {
+  background: rgba(160, 174, 192, 0.15) !important;
+  border: 1px solid rgba(160, 174, 192, 0.3) !important;
+  color: #e2e8f0 !important;
+  transition: all 0.3s ease;
+}
+
+.btn-magic-secondary:hover {
+  background: rgba(160, 174, 192, 0.25) !important;
+  border-color: rgba(160, 174, 192, 0.5) !important;
+  color: white !important;
+}
+
+/* Badge de fuego */
+.badge-fire {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;
+  color: white !important;
+  font-weight: bold;
+}
+
+/* Efectos de texto mágico mejorados */
+.text-magic {
+  background: linear-gradient(45deg, #d69e2e, #6b46c1, #3182ce) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  font-weight: bold;
+}
+
+.text-glow {
+  text-shadow: 0 0 10px currentColor, 0 0 20px currentColor !important;
+}
+
+/* Navbar mágico mejorado */
+.navbar-magic {
+  background: rgba(26, 32, 44, 0.95) !important;
+  backdrop-filter: blur(15px) !important;
+  border-bottom: 1px solid rgba(107, 70, 193, 0.4) !important;
+  box-shadow: 0 4px 30px rgba(107, 70, 193, 0.2) !important;
+}
+/* Agregar esto al final de magic-theme.css */
+
+/* Cards mágicas mejoradas */
+.card-magic {
+  background: rgba(45, 55, 72, 0.9) !important;
+  border: 1px solid rgba(107, 70, 193, 0.3) !important;
+  border-radius: 12px !important;
+  backdrop-filter: blur(10px) !important;
+  transition: all 0.3s ease !important;
+  color: #e2e8f0 !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.card-magic::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #6b46c1, #3182ce, #38b2ac);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.card-magic:hover::before {
+  transform: scaleX(1);
+}
+
+/* Badges de elementos mejorados */
+.badge-water {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%) !important;
+  color: white !important;
+}
+
+.badge-air {
+  background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%) !important;
+  color: #2d3748 !important;
+}
+
+.badge-earth {
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%) !important;
+  color: white !important;
+}
+
+/* Efectos de precio mágico */
+.magic-price {
+  font-weight: bold !important;
+  text-shadow: 0 0 8px currentColor !important;
+}
+
+/* Estados de stock */
+.stock-indicator {
+  font-weight: 500;
+}
+
+/* Efectos de texto mejorados */
+.magic-subtitle {
+  font-size: 1.1rem;
+  opacity: 0.8;
+  font-style: italic;
+}
+
+/* Divisor mágico */
+.magic-divider {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #6b46c1, transparent);
+  margin: 1rem auto;
+  width: 200px;
+}
+
+/* Hero title with softer white glow and wavy animation */
+.hero-title {
+  font-size: clamp(1.8rem, 4.5vw, 3.2rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0;
+  color: #fff;
+  text-shadow:
+    0 0 12px #fff,
+    0 0 24px #fff,
+    0 0 40px #fff;
+  animation: whiteGlowPulse 2.2s ease-in-out infinite, waveText 2.8s infinite linear;
+  display: inline-block;
+}
+@keyframes whiteGlowPulse {
+  0% {
+    text-shadow: 0 0 0px #fff, 0 0 0px #fff, 0 0 0px #fff;
+  }
+  30% {
+    text-shadow: 0 0 12px #fff, 0 0 24px #fff, 0 0 40px #fff;
+  }
+  60% {
+    text-shadow: 0 0 18px #fff, 0 0 36px #fff, 0 0 60px #fff;
+  }
+  100% {
+    text-shadow: 0 0 0px #fff, 0 0 0px #fff, 0 0 0px #fff;
+  }
+}
+@keyframes waveText {
+  0% { transform: translateY(0); }
+  10% { transform: translateY(-4px); }
+  20% { transform: translateY(-8px); }
+  30% { transform: translateY(-4px); }
+  40% { transform: translateY(0); }
+  50% { transform: translateY(4px); }
+  60% { transform: translateY(8px); }
+  70% { transform: translateY(4px); }
+  80% { transform: translateY(0); }
+  90% { transform: translateY(-4px); }
+  100% { transform: translateY(0); }
+}
+.hero-subtitle {
+  margin-top: 8px;
+  color: #cbd5e1;
+  font-size: clamp(0.95rem, 2.2vw, 1.1rem);
+  opacity: 0.95;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.2);
+  animation: waveText 3.2s infinite linear;
+  display: inline-block;
+}
