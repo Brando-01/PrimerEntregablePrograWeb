@@ -1,13 +1,10 @@
-// components/autenticacion/CreateAccount.tsx - VERSIÓN MÁGICA CON VERIFICACIÓN
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-// import { useUser } from '../context/UserContext'; // Se usará después de la verificación
 import { generateVerificationCode, sendVerificationEmail } from '../../services/emailService';
 import '../../assets/estilos4.css';
 
-const CreateAccount: React.FC = () => {
+const CreateAccount = () => {
   const navigate = useNavigate();
-  // const { addUser } = useUser(); // Se usará después de la verificación
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -19,7 +16,7 @@ const CreateAccount: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
@@ -41,8 +38,8 @@ const CreateAccount: React.FC = () => {
       { username: 'domazdack', email: 'domazdack@magos.com' },
       { username: 'jep365', email: 'jep365@magos.com' }
     ];
-    const exists = magicUsers.some((u: any) => u.email === formData.email || u.username === formData.nickname)
-      || validUsers.some((u: any) => u.email === formData.email || u.username === formData.nickname);
+    const exists = magicUsers.some((u) => u.email === formData.email || u.username === formData.nickname)
+      || validUsers.some((u) => u.email === formData.email || u.username === formData.nickname);
     if (exists) {
       setError('❌ Ya existe un usuario con ese correo o nombre de mago.');
       setIsLoading(false);
