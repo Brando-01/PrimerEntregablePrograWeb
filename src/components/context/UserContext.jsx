@@ -1,24 +1,12 @@
-// components/context/UserContext.tsx
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import type { ReactNode } from 'react';
-import type { User } from '../types';
 import { mockUsers } from '../types';
 
-interface UserContextType {
-  users: User[];
-  addUser: (user: Omit<User, 'id' | 'totalOrders' | 'totalSpent' | 'registrationDate'>) => void;
-  updateUser: (id: string, user: Partial<User>) => void;
-  deleteUser: (id: string) => void;
-  toggleUserStatus: (id: string) => void;
-  getUserById: (id: string) => User | undefined;
-}
-
-const UserContext = createContext<UserContextType | undefined>(undefined);
+const UserContext = createContext();
 
 const USERS_STORAGE_KEY = 'retrogames-admin-users';
 
-export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [users, setUsers] = useState<User[]>(() => {
+export const UserProvider = ({ children }) => {
+  const [users, setUsers] = useState(() => {
     try {
       const saved = localStorage.getItem(USERS_STORAGE_KEY);
       if (saved) {
@@ -33,7 +21,6 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   });
 
-  // Guardar en localStorage
   useEffect(() => {
     try {
       localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
@@ -43,8 +30,8 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }, [users]);
 
-  const addUser = (userData: Omit<User, 'id' | 'totalOrders' | 'totalSpent' | 'registrationDate'>) => {
-    const newUser: User = {
+  const addUser = (userData) => {
+    const newUser = {
       ...userData,
       id: (users.length + 1).toString(),
       totalOrders: 0,
@@ -58,7 +45,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return newUser;
   };
 
-  const updateUser = (id: string, userData: Partial<User>) => {
+  const updateUser = (id, userData) => {
     setUsers(prev => 
       prev.map(user => 
         user.id === id ? { ...user, ...userData } : user
@@ -67,25 +54,43 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     console.log('✏️ Usuario actualizado:', id);
   };
 
-  const deleteUser = (id: string) => {
+  const deleteUser = (id) => {
     setUsers(prev => prev.filter(user => user.id !== id));
     console.log('🗑️ Usuario eliminado:', id);
   };
 
-  const toggleUserStatus = (id: string) => {
-    setUsers(prev => 
-      prev.map(user => 
-        user.id === id ? { ...user, isActive: !user.isActive } : user
-      )
-    );
+  const toggleUserStatus = (id) => {
+    setUsers(prev => {
+      const updated = prev.map(user => user.id === id ? { ...user, isActive: !user.isActive } : user);
+
+      // Also sync with magicUsers stored in localStorage (credentials)
+      try {
+        const magicUsers = JSON.parse(localStorage.getItem('magicUsers') || '[]');
+        const changedUser = updated.find(u => u.id === id);
+        if (changedUser) {
+          const muUpdated = magicUsers.map(mu => {
+            // match by id or by username/email
+            if (String(mu.id) === String(changedUser.id) || (mu.username && changedUser.nickname && mu.username === changedUser.nickname) || (mu.email && changedUser.email && mu.email === changedUser.email)) {
+              return { ...mu, isActive: changedUser.isActive };
+            }
+            return mu;
+          });
+          localStorage.setItem('magicUsers', JSON.stringify(muUpdated));
+        }
+      } catch (e) {
+        console.error('❌ Error sincronizando magicUsers en localStorage:', e);
+      }
+
+      return updated;
+    });
     console.log('🔄 Estado cambiado para usuario:', id);
   };
 
-  const getUserById = (id: string) => {
+  const getUserById = (id) => {
     return users.find(user => user.id === id);
   };
 
-  const value: UserContextType = {
+  const value = {
     users,
     addUser,
     updateUser,
