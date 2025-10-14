@@ -1,14 +1,15 @@
-// components/autenticacion/login.tsx - VERSIÓN CORREGIDA
 import React, { useState, useEffect } from 'react';
+import { useUser } from '../context/UserContext';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import '../../assets/estilos4.css';
 
-const LoginForm: React.FC = () => {
+const LoginForm = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const { users } = useUser();
 
   // Autocompletar si viene de verificación
   useEffect(() => {
@@ -28,7 +29,7 @@ const LoginForm: React.FC = () => {
     { username: 'jep365', password: 'jep789', role: 'user' }
   ];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     setError('');
 
@@ -38,10 +39,20 @@ const LoginForm: React.FC = () => {
       return;
     }
 
-    // ✅ CORREGIDO: Buscar primero en usuarios predefinidos
-    let user = validUsers.find(
-      u => u.username.toLowerCase() === username.toLowerCase() && u.password === password
-    );
+    // Buscar primero en usuarios del contexto (usuarios registrados)
+    let user = null;
+    try {
+      user = users.find(u => (u.nickname && u.nickname.toLowerCase() === username.toLowerCase()) && u.password === password);
+    } catch (err) {
+      user = null;
+    }
+
+    // Si no está en contexto, buscar en usuarios predefinidos
+    if (!user) {
+      user = validUsers.find(
+        u => u.username.toLowerCase() === username.toLowerCase() && u.password === password
+      );
+    }
 
     console.log('🔍 Buscando usuario:', username.toLowerCase());
     console.log('📋 Usuarios predefinidos:', validUsers.map(u => u.username));
@@ -50,11 +61,15 @@ const LoginForm: React.FC = () => {
     if (!user) {
       try {
         const magicUsers = JSON.parse(localStorage.getItem('magicUsers') || '[]');
-        console.log('📋 Usuarios dinámicos:', magicUsers.map((u: any) => u.username));
+        console.log('📋 Usuarios dinámicos:', magicUsers.map(u => u.username));
         user = magicUsers.find(
-          (u: any) => (u.username && u.username.toLowerCase() === username.toLowerCase()) && u.password === password
+          u => (u.username && u.username.toLowerCase() === username.toLowerCase()) && u.password === password
         );
         console.log('✅ Usuario encontrado en dinámicos:', user ? 'SÍ' : 'NO');
+        if (user && user.isActive === false) {
+          setError('❌ Usuario desactivado. No puedes iniciar sesión.');
+          return;
+        }
       } catch (error) {
         console.error('Error cargando usuarios dinámicos:', error);
       }
@@ -63,6 +78,11 @@ const LoginForm: React.FC = () => {
     }
 
     if (user) {
+      // Si el usuario tiene isActive === false, bloquear login
+      if (user.isActive === false) {
+        setError('❌ Usuario desactivado. Si intentas ingresar de nuevo, no podrás acceder.');
+        return;
+      }
       // Forzar rol admin si el usuario es archimago
       const forcedRole = user.username.toLowerCase() === 'archimago' ? 'admin' : user.role;
       // Guardar sesión
@@ -71,10 +91,10 @@ const LoginForm: React.FC = () => {
         role: forcedRole,
         isLoggedIn: true,
         loginTime: new Date().toISOString(),
-        magicLevel: forcedRole === 'admin' ? 'Archimago' : ((user as any).magicLevel || 'Mago'),
-        fullName: (user as any).fullName || user.username,
-        country: (user as any).country || '',
-        avatar: (user as any).avatar || '/img/default-avatar.png'
+        magicLevel: forcedRole === 'admin' ? 'Archimago' : (user.magicLevel || 'Mago'),
+        fullName: user.fullName || user.username,
+        country: user.country || '',
+        avatar: user.avatar || '/img/default-avatar.png'
       };
       localStorage.setItem('userSession', JSON.stringify(userSession));
       console.log('✅ Sesión guardada:', userSession);
@@ -87,7 +107,7 @@ const LoginForm: React.FC = () => {
   };
 
   // Función para acceso rápido (solo desarrollo)
-  const quickLogin = (user: string, pass: string) => {
+  const quickLogin = (user, pass) => {
     setUsername(user);
     setPassword(pass);
   };
@@ -155,7 +175,7 @@ const LoginForm: React.FC = () => {
             </button>
 
             <div className="d-flex justify-content-between">
-              <Link to="/recuperar" className="forgot-password">¿Olvidaste tu conjuro?</Link>
+              <Link to="/recuperar" className="forgot-password">¿Olvide mi password?</Link>
               <Link to="/admin-panel" className="forgot-password">¿Eres el Archimago?</Link>
             </div>
           </form>
