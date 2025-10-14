@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useOrder } from '../context/OrderContext';
-import type { Order } from '../types';
 
-const OrderHistory: React.FC = () => {
+const OrderHistory = () => {
   const navigate = useNavigate();
   const { orders } = useOrder(); // ✅ Usar órdenes reales del contexto
   const session = JSON.parse(localStorage.getItem('userSession') || 'null');
   const isAdmin = session?.role === 'admin';
-  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [filterStatus, setFilterStatus] = useState('all');
 
   // Filtrar por estado y por usuario si no es admin
   const filteredOrders = orders.filter(order => {
@@ -29,7 +28,7 @@ const OrderHistory: React.FC = () => {
     return statusOk && userOk;
   });
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status) => {
     const statusConfig = {
       pending: { class: 'bg-warning', text: 'Pendiente' },
       confirmed: { class: 'bg-info', text: 'Confirmado' },
@@ -38,7 +37,7 @@ const OrderHistory: React.FC = () => {
       cancelled: { class: 'bg-danger', text: 'Cancelado' }
     };
     
-    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
+    const config = statusConfig[status] || statusConfig.pending;
     return <span className={`badge ${config.class}`}>{config.text}</span>;
   };
 
