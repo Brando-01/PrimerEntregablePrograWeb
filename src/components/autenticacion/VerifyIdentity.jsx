@@ -2,10 +2,10 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../assets/estilos4.css';
 
-const VerifyIdentity: React.FC = () => {
+const VerifyIdentity = () => {
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     navigate('/login');
   };
