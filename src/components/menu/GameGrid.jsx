@@ -113,12 +113,12 @@ const GameGrid = ({ games, onSelect }) => {
                   </div>
                   
                   <div className="d-flex flex-wrap gap-1 mb-2">
-                    <span className="badge badge-magic small">
-                      {game.category}
-                    </span>
                     <span className={`badge ${getElementColor(game.platform)} small`}>
                       {getElementIcon(game.platform)} {game.platform}
                     </span>
+                    {game.elements && game.elements.length > 0 && (
+                      <span className="badge badge-magic small">{game.elements.join(', ')}</span>
+                    )}
                   </div>
                   
                   <div className="d-flex justify-content-between align-items-center">

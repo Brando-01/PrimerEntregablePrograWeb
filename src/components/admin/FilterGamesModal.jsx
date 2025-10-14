@@ -3,13 +3,12 @@ import '../../assets/estiloAdminNoticias.css';
 
 const FilterGamesModal = ({ visible, onClose, onFilter }) => {
   const [fecha, setFecha] = useState('');
-  const [categoria, setCategoria] = useState('');
   const [precioMin, setPrecioMin] = useState('');
   const [precioMax, setPrecioMax] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onFilter({ fecha, categoria, precioMin, precioMax });
+    onFilter({ fecha, precioMin, precioMax });
     onClose();
   };
 
@@ -31,16 +30,7 @@ const FilterGamesModal = ({ visible, onClose, onFilter }) => {
               <input type="date" className="form-control" id="fecha" value={fecha} onChange={e => setFecha(e.target.value)} />
             </div>
 
-            {/* Categoría */}
-            <div className="mb-3">
-              <label htmlFor="categoria" className="form-label">Categoría</label>
-              <select className="form-select" id="categoria" value={categoria} onChange={e => setCategoria(e.target.value)}>
-                <option value="">Todas</option>
-                <option value="accion">Acción</option>
-                <option value="aventura">Aventura</option>
-                <option value="rpg">RPG</option>
-              </select>
-            </div>
+            {/* (Categoría eliminada) */}
 
             {/* Rango de precio */}
             <div className="mb-3">

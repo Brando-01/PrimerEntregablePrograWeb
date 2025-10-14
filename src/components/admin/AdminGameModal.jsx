@@ -9,8 +9,8 @@ const AdminGameModal = ({ visible, onClose, initialData }) => {
     title: '',
     description: '',
     price: 0,
-    category: '',
-    platform: 'Windows',
+    platform: 'Arcana', // usado como "Tipo de Magia" (mantener campo platform para compatibilidad)
+    elements: [],
     stock: 10,
     sku: '',
     discount: 0,
@@ -30,8 +30,8 @@ const AdminGameModal = ({ visible, onClose, initialData }) => {
           title: initialData.title,
           description: initialData.description,
           price: initialData.price,
-          category: initialData.category,
-          platform: initialData.platform,
+          platform: initialData.platform || 'Arcana',
+          elements: initialData.elements || [],
           stock: initialData.stock,
           sku: initialData.sku,
           discount: initialData.discount || 0,
@@ -46,8 +46,8 @@ const AdminGameModal = ({ visible, onClose, initialData }) => {
           title: '',
           description: '',
           price: 0,
-          category: '',
-          platform: 'Windows',
+          platform: 'Arcana',
+          elements: [],
           stock: 10,
           sku: `SKU-${Date.now()}`,
           discount: 0,
@@ -72,8 +72,9 @@ const AdminGameModal = ({ visible, onClose, initialData }) => {
       title: formData.title,
       description: formData.description,
       price: formData.price,
-      category: formData.category,
+      // Guardamos el tipo de magia en el campo `platform` para mantener compatibilidad
       platform: formData.platform,
+      elements: formData.elements || [],
       images: images,
       trailer: trailer || undefined,
       rating: 0,
@@ -88,11 +89,11 @@ const AdminGameModal = ({ visible, onClose, initialData }) => {
     if (initialData) {
       // Actualizar juego existente
       updateGame(initialData.id, gameData);
-      alert('✅ Juego actualizado correctamente');
+      alert('✅ Poder actualizado correctamente');
     } else {
       // Agregar nuevo juego
       addGame(gameData);
-      alert('✅ Juego agregado correctamente');
+      alert('✅ Poder invocado correctamente');
     }
 
     onClose();
@@ -116,9 +117,9 @@ const AdminGameModal = ({ visible, onClose, initialData }) => {
         <div className="modal-content">
           <form onSubmit={handleSubmit}>
             {/* Encabezado */}
-            <div className="modal-header bg-dark text-white">
+                <div className="modal-header bg-dark text-white">
               <h5 className="modal-title">
-                {initialData ? '✏️ Editar Juego' : '➕ Agregar Juego'}
+                {initialData ? '✏️ Editar Poder' : '➕ Invocar Nuevo Poder'}
               </h5>
               <button type="button" className="btn-close btn-close-white" onClick={onClose} />
             </div>
@@ -128,7 +129,7 @@ const AdminGameModal = ({ visible, onClose, initialData }) => {
               {/* Información básica */}
               <div className="row mb-3">
                 <div className="col-md-6">
-                  <label className="form-label">Título *</label>
+                  <label className="form-label">Nombre del Poder *</label>
                   <input
                     type="text"
                     className="form-control"
@@ -137,39 +138,49 @@ const AdminGameModal = ({ visible, onClose, initialData }) => {
                     required
                   />
                 </div>
-                <div className="col-md-6">
-                  <label className="form-label">Categoría *</label>
-                  <select
-                    className="form-select"
-                    value={formData.category}
-                    onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
-                    required
-                  >
-                    <option value="">Seleccionar categoría</option>
-                    <option value="Más vendidos">Más vendidos</option>
-                    <option value="Mejor valorados">Mejor valorados</option>
-                    <option value="Gratuitos">Gratuitos</option>
-                    <option value="Multijugador">Multijugador</option>
-                    <option value="Acceso anticipado">Acceso anticipado</option>
-                  </select>
-                </div>
+                {/* Categoría eliminada (no usar) */}
               </div>
 
               <div className="row mb-3">
                 <div className="col-md-6">
-                  <label className="form-label">Plataforma *</label>
+                  <label className="form-label">Tipo de Magia *</label>
                   <select
                     className="form-select"
                     value={formData.platform}
                     onChange={(e) => setFormData(prev => ({ ...prev, platform: e.target.value }))}
                     required
                   >
-                    <option value="Windows">Windows</option>
-                    <option value="PS5">PS5</option>
-                    <option value="XBOX">XBOX</option>
-                    <option value="iOS">iOS</option>
-                    <option value="Nintendo Switch">Nintendo Switch</option>
+                    <option value="Arcana">Arcana</option>
+                    <option value="Elemental">Elemental</option>
+                    <option value="Divina">Divina</option>
+                    <option value="Sombras">Sombras</option>
+                    <option value="Naturaleza">Naturaleza</option>
+                    <option value="Tecnomancia">Tecnomancia</option>
                   </select>
+                </div>
+                <div className="col-12 mt-2">
+                  <label className="form-label">Elementos (selección múltiple)</label>
+                  <div className="d-flex flex-wrap gap-2">
+                    {['Fuego','Agua','Tierra','Aire','Luz','Oscuridad','Éter'].map(el => (
+                      <div className="form-check" key={el} style={{ minWidth: '110px' }}>
+                        <input
+                          className="form-check-input"
+                          type="checkbox"
+                          id={`element-${el}`}
+                          checked={(formData.elements || []).includes(el)}
+                          onChange={(e) => {
+                            const checked = e.target.checked;
+                            setFormData(prev => {
+                              const next = new Set(prev.elements || []);
+                              if (checked) next.add(el); else next.delete(el);
+                              return { ...prev, elements: Array.from(next) };
+                            });
+                          }}
+                        />
+                        <label className="form-check-label" htmlFor={`element-${el}`}>{el}</label>
+                      </div>
+                    ))}
+                  </div>
                 </div>
                 <div className="col-md-3">
                   <label className="form-label">Precio ($) *</label>

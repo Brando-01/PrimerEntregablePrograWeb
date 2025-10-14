@@ -51,7 +51,6 @@ const AdminPanel = () => {
   // Estados para filtros
   const [userFilter, setUserFilter] = useState('');
   const [gameFilters, setGameFilters] = useState({
-    categoria: '',
     plataforma: '',
     activo: 'todos'
   });
@@ -123,7 +122,6 @@ const AdminPanel = () => {
 
   // Funciones para juegos
   const filteredGames = games.filter(game => {
-    if (gameFilters.categoria && game.category !== gameFilters.categoria) return false;
     if (gameFilters.plataforma && game.platform !== gameFilters.plataforma) return false;
     if (gameFilters.activo === 'activos' && !game.isActive) return false;
     if (gameFilters.activo === 'inactivos' && game.isActive) return false;

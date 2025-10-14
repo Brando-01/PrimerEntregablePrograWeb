@@ -90,8 +90,10 @@ const OrderConfirmation = ({ onContinueShopping }) => {
                   <div className="flex-grow-1">
                     <h6 className="mb-1">{item.game.title}</h6>
                     <small className="text-muted">
-                      Plataforma: {item.game.platform} | 
-                      Categoría: {item.game.category}
+                      Tipo de Magia: {item.game.platform}
+                      {item.game.elements && item.game.elements.length > 0 && (
+                        <span> | Elementos: {item.game.elements.join(', ')}</span>
+                      )}
                     </small>
                     <br />
                     <small className="text-success">Precio: ${item.price.toFixed(2)}</small>

@@ -60,7 +60,7 @@ const CartPanel = ({
                       />
                       <div className="flex-grow-1">
                         <h6 className="mb-1 fw-bold">{item.title}</h6>
-                        <p className="text-muted small mb-1">{item.category}</p>
+                        <p className="text-muted small mb-1">Tipo: {item.platform}{item.elements && item.elements.length > 0 ? ` • ${item.elements.join(', ')}` : ''}</p>
                         <div className="d-flex align-items-center justify-content-between">
                           <div className="d-flex align-items-center gap-3">
                             <strong className="text-success">${item.price.toFixed(2)}</strong>

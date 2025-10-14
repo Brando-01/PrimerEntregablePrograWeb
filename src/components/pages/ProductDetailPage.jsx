@@ -148,8 +148,12 @@ const ProductDetailPage = () => {
           {/* Información rápida */}
           <div className="text-center">
             <div className="mb-3">
-              <span className="badge bg-primary me-2">✨ {game.category}</span>
               <span className="badge bg-secondary">⚡ {game.platform}</span>
+              {game.elements && game.elements.length > 0 && (
+                <div className="mt-2">
+                  <small className="text-muted">Elementos: {game.elements.join(', ')}</small>
+                </div>
+              )}
             </div>
             
             <div className="d-flex justify-content-center align-items-center mb-3">
@@ -190,11 +194,11 @@ const ProductDetailPage = () => {
               <div className="row">
                 <div className="col-6 mb-2">
                   <strong>Tipo de Magia:</strong><br />
-                  {game.category}
+                  {game.platform}
                 </div>
                 <div className="col-6 mb-2">
-                  <strong>Elemento:</strong><br />
-                  {game.platform}
+                  <strong>Elementos:</strong><br />
+                  {game.elements && game.elements.length > 0 ? game.elements.join(', ') : '—'}
                 </div>
                 <div className="col-6 mb-2">
                   <strong>Nivel de Poder:</strong><br />

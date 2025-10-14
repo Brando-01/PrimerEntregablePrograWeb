@@ -104,8 +104,12 @@ const GameModal = ({ game, onClose, onAddToCart }) => {
               </div>
 
               <div className="mb-3">
-                <span className="badge bg-primary me-2">✨ {game.category}</span>
                 <span className="badge bg-secondary">⚡ {game.platform}</span>
+                {game.elements && game.elements.length > 0 && (
+                  <div className="mt-2">
+                    <small className="text-muted">Elementos: {game.elements.join(', ')}</small>
+                  </div>
+                )}
               </div>
 
               <button 
@@ -126,10 +130,10 @@ const GameModal = ({ game, onClose, onAddToCart }) => {
               <h5>⚡ Especificaciones Arcanas</h5>
               <div className="row small">
                 <div className="col-6">
-                  <strong>Tipo:</strong> {game.category}
+                  <strong>Tipo de Magia:</strong> {game.platform}
                 </div>
                 <div className="col-6">
-                  <strong>Elemento:</strong> {game.platform}
+                  <strong>Elementos:</strong> {game.elements && game.elements.length > 0 ? game.elements.join(', ') : '—'}
                 </div>
                 <div className="col-6">
                   <strong>Nivel:</strong> {game.rating >= 4 ? 'Avanzado' : game.rating >= 3 ? 'Intermedio' : 'Básico'}

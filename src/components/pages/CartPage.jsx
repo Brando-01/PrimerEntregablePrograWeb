@@ -141,7 +141,7 @@ const CartPage = () => {
                       />
                       <div className="flex-grow-1">
                         <h6 className="mb-1">{item.title}</h6>
-                        <p className="text-muted mb-1">{item.category}</p>
+                        <p className="text-muted mb-1">Tipo: {item.platform}{item.elements && item.elements.length > 0 ? ` • ${item.elements.join(', ')}` : ''}</p>
                         <strong className="text-success">${item.price.toFixed(2)}</strong>
                       </div>
                       <div className="d-flex gap-2 align-items-center">

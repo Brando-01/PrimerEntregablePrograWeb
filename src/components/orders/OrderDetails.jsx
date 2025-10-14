@@ -135,9 +135,12 @@ const OrderDetails = () => {
                           {item.game.description.substring(0, 120)}...
                         </p>
                         <div className="d-flex gap-3 small text-muted">
-                          <span>🎮 Plataforma: {item.game.platform}</span>
-                          <span>📁 Categoría: {item.game.category}</span>
+                          <span>🔮 Tipo de Magia: {item.game.platform}</span>
+                          {/* Categoría eliminada */}
                           <span>⭐ Rating: {item.game.rating}/5</span>
+                          {item.game.elements && item.game.elements.length > 0 && (
+                            <span> | Elementos: {item.game.elements.join(', ')}</span>
+                          )}
                         </div>
                       </div>
                       <div className="text-end">

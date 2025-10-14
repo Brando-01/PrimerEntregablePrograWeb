@@ -25,15 +25,7 @@ const Navbar = ({
 
   // ...existing code...
   
-  // Listas para los dropdowns - TRANSFORMADAS
-  const categories = [
-    'Poderes Elementales',
-    'Magia Avanzada', 
-    'Hechizos Básicos',
-    'Artefactos Legendarios',
-    'Pociones Mágicas'
-  ];
-
+  // Elementos y contador por elemento
   const elements = [
     'Todos los Elementos',
     'Fuego',
@@ -44,12 +36,6 @@ const Navbar = ({
     'Oscuridad'
   ];
 
-  // Contador de poderes por categoría
-  const countByCategory = (category) => {
-    return games.filter(g => g.category === category).length;
-  };
-
-  // Contador de poderes por elemento
   const countByElement = (element) => {
     return element === 'Todos los Elementos' ? games.length : games.filter(g => g.platform === element).length;
   };
@@ -98,34 +84,7 @@ const Navbar = ({
       <div className="collapse navbar-collapse" id="navbarContent">
         <div className="d-flex flex-column flex-lg-row align-items-start align-items-lg-center gap-2 my-2 my-lg-0">
           
-          {/* Dropdown Categorías - ESTILO MÁGICO */}
-          <div className="dropdown">
-            <button 
-              className="btn btn-magic dropdown-toggle magic-dropdown" // ✅ BOTÓN MÁGICO
-              type="button" 
-              id="categoriesDropdown" 
-              data-bs-toggle="dropdown"
-              style={{ minWidth: '160px' }}
-            >
-              <i className="bi bi-stars me-1 text-warning"></i> {/* ✅ ÍCONO DORADO */}
-              <span className="text-glow">Tipos de Magia</span> {/* ✅ TEXTO GLOW */}
-            </button>
-            <ul className="dropdown-menu dropdown-menu-magic"> {/* ✅ DROPDOWN MÁGICO */}
-              {categories.map(category => (
-                <li key={category}>
-                  <button 
-                    className="dropdown-item dropdown-item-magic d-flex justify-content-between align-items-center" // ✅ ITEM MÁGICO
-                    onClick={() => onFilterCategory(category)}
-                  >
-                    <span>{category}</span>
-                    <span className="badge badge-magic ms-2"> {/* ✅ BADGE MÁGICO */}
-                      {countByCategory(category)}
-                    </span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
+          {/* (Categorías eliminadas) */}
 
           {/* Dropdown Elementos - ESTILO MÁGICO */}
           <div className="dropdown">

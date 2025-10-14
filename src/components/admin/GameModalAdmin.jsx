@@ -9,8 +9,8 @@ const GameModalAdmin = ({ visible, onClose, game }) => {
     title: '',
     description: '',
     price: 0,
-    category: '',
-    platform: 'Windows',
+    platform: 'Arcana',
+    elements: [],
     stock: 0,
     sku: '',
     discount: 0,
@@ -29,8 +29,8 @@ const GameModalAdmin = ({ visible, onClose, game }) => {
         title: game.title,
         description: game.description,
         price: game.price,
-        category: game.category,
         platform: game.platform,
+        elements: game.elements || [],
         stock: game.stock,
         sku: game.sku,
         discount: game.discount || 0,
@@ -51,8 +51,8 @@ const GameModalAdmin = ({ visible, onClose, game }) => {
       title: formData.title,
       description: formData.description,
       price: formData.price,
-      category: formData.category,
       platform: formData.platform,
+      elements: formData.elements || [],
       images: images,
       trailer: trailer || undefined,
       stock: formData.stock,
@@ -117,11 +117,11 @@ const GameModalAdmin = ({ visible, onClose, game }) => {
           {/* Tabs de navegación */}
           <ul className="nav nav-tabs">
             <li className="nav-item">
-              <button 
+                        <button 
                 className={`nav-link ${activeTab === 'edit' ? 'active' : ''}`}
                 onClick={() => setActiveTab('edit')}
               >
-                ✏️ Editar Producto
+                ✏️ Editar Poder
               </button>
             </li>
             <li className="nav-item">
@@ -154,7 +154,7 @@ const GameModalAdmin = ({ visible, onClose, game }) => {
                     
                     <div className="row mb-3">
                       <div className="col-12">
-                        <label className="form-label">Título *</label>
+                        <label className="form-label">Nombre del Poder *</label>
                         <input
                           type="text"
                           className="form-control"
@@ -166,36 +166,46 @@ const GameModalAdmin = ({ visible, onClose, game }) => {
                     </div>
 
                     <div className="row mb-3">
+                      {/* Categoría eliminada (no usar) */}
                       <div className="col-6">
-                        <label className="form-label">Categoría *</label>
-                        <select
-                          className="form-select"
-                          value={formData.category}
-                          onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
-                          required
-                        >
-                          <option value="">Seleccionar...</option>
-                          <option value="Más vendidos">Más vendidos</option>
-                          <option value="Mejor valorados">Mejor valorados</option>
-                          <option value="Gratuitos">Gratuitos</option>
-                          <option value="Multijugador">Multijugador</option>
-                          <option value="Acceso anticipado">Acceso anticipado</option>
-                        </select>
-                      </div>
-                      <div className="col-6">
-                        <label className="form-label">Plataforma *</label>
+                        <label className="form-label">Tipo de Magia *</label>
                         <select
                           className="form-select"
                           value={formData.platform}
                           onChange={(e) => setFormData(prev => ({ ...prev, platform: e.target.value }))}
                           required
                         >
-                          <option value="Windows">Windows</option>
-                          <option value="PS5">PS5</option>
-                          <option value="XBOX">XBOX</option>
-                          <option value="iOS">iOS</option>
-                          <option value="Nintendo Switch">Nintendo Switch</option>
+                          <option value="Arcana">Arcana</option>
+                          <option value="Elemental">Elemental</option>
+                          <option value="Divina">Divina</option>
+                          <option value="Sombras">Sombras</option>
+                          <option value="Naturaleza">Naturaleza</option>
+                          <option value="Tecnomancia">Tecnomancia</option>
                         </select>
+                        <div className="mt-2">
+                          <label className="form-label">Elementos</label>
+                          <div className="d-flex flex-wrap gap-2">
+                            {['Fuego','Agua','Tierra','Aire','Luz','Oscuridad','Éter'].map(el => (
+                              <div className="form-check" key={el} style={{ minWidth: '100px' }}>
+                                <input
+                                  className="form-check-input"
+                                  type="checkbox"
+                                  id={`elem-${game?.id}-${el}`}
+                                  checked={(formData.elements || []).includes(el)}
+                                  onChange={(e) => {
+                                    const checked = e.target.checked;
+                                    setFormData(prev => {
+                                      const next = new Set(prev.elements || []);
+                                      if (checked) next.add(el); else next.delete(el);
+                                      return { ...prev, elements: Array.from(next) };
+                                    });
+                                  }}
+                                />
+                                <label className="form-check-label" htmlFor={`elem-${game?.id}-${el}`}>{el}</label>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
                       </div>
                     </div>
 

@@ -6,7 +6,7 @@ import { OrderProvider } from './components/context/OrderContext';
 import { GameProvider } from './components/context/GameContext';
 import { UserProvider } from './components/context/UserContext';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import 'bootstrap/dist/js/bootstrap.bundle';
 
 console.log('🚀 Iniciando aplicación...');
 
