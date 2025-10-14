@@ -1,21 +1,9 @@
-// components/autenticacion/EmailVerification.tsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import '../../assets/estilos4.css';
 
-interface EmailVerificationProps {
-  userData: {
-    fullName: string;
-    email: string;
-    nickname: string;
-    password: string;
-    country: string;
-  };
-  verificationCode: string;
-}
-
-const EmailVerification: React.FC<EmailVerificationProps> = ({ userData, verificationCode }) => {
+const EmailVerification = ({ userData, verificationCode }) => {
   const navigate = useNavigate();
   const { addUser } = useUser();
   const [inputCode, setInputCode] = useState('');
@@ -38,13 +26,13 @@ const EmailVerification: React.FC<EmailVerificationProps> = ({ userData, verific
     return () => clearInterval(timer);
   }, []);
 
-  const formatTime = (seconds: number): string => {
+  const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     setError('');
 
