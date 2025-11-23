@@ -4,7 +4,7 @@ import { useGame } from '../context/GameContext';
 import { useUser } from '../context/UserContext';
 import EditNotice from './EditNotice';
 import '../../assets/estiloAdminNoticias.css';
-import { noticiasIniciales } from '../data/noticias';
+// Noticias will be fetched from backend; no static import
 import NoticeTable from './NoticeTable';
 import DeleteNotice from './DeleteNotice';
 import AddNotice from './AddNotice';
@@ -31,12 +31,34 @@ const AdminPanel = () => {
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [noticeToEdit, setNoticeToEdit] = useState({ id: '', title: '', content: '', image: '' });
   const [noticias, setNoticias] = useState(() => {
-    const stored = localStorage.getItem('noticias');
-    if (stored) {
-      return [...noticiasIniciales, ...JSON.parse(stored)];
-    }
-    return noticiasIniciales;
+    try {
+      const stored = localStorage.getItem('noticias');
+      if (stored) return JSON.parse(stored);
+    } catch (e) {}
+    return [];
   });
+
+  // Load noticias from backend on mount, fallback to localStorage
+  useEffect(() => {
+    let mounted = true;
+    const fetchNoticias = async () => {
+      try {
+        const res = await fetch('http://localhost:4000/api/noticias');
+        if (!res.ok) throw new Error('Fetch noticias failed');
+        const data = await res.json();
+        if (mounted && Array.isArray(data)) {
+          setNoticias(data);
+          try { localStorage.setItem('noticias', JSON.stringify(data)); } catch (e) {}
+          return;
+        }
+      } catch (err) {
+        console.warn('⚠️ No se pudieron cargar noticias desde backend:', err.message);
+      }
+      // fallback: already initialized from localStorage
+    };
+    fetchNoticias();
+    return () => { mounted = false; };
+  }, []);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [noticeToDelete, setNoticeToDelete] = useState({ id: '' });
   const [addModalVisible, setAddModalVisible] = useState(false);
@@ -65,12 +87,26 @@ const AdminPanel = () => {
   };
 
   const handleConfirmDelete = () => {
-    setNoticias(prev => {
-      const updated = prev.filter(n => n.id !== noticeToDelete.id);
-      localStorage.setItem('noticias', JSON.stringify(updated.filter(n => !noticiasIniciales.some(init => init.id === n.id))));
-      return updated;
-    });
-    setDeleteModalVisible(false);
+    (async () => {
+      try {
+        const res = await fetch(`http://localhost:4000/api/noticias/${noticeToDelete.id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Delete failed');
+        setNoticias(prev => {
+          const updated = prev.filter(n => n.id !== noticeToDelete.id);
+          try { localStorage.setItem('noticias', JSON.stringify(updated)); } catch (e) {}
+          return updated;
+        });
+      } catch (err) {
+        // fallback local
+        setNoticias(prev => {
+          const updated = prev.filter(n => n.id !== noticeToDelete.id);
+          try { localStorage.setItem('noticias', JSON.stringify(updated)); } catch (e) {}
+          return updated;
+        });
+      } finally {
+        setDeleteModalVisible(false);
+      }
+    })();
   };
 
   const handleAddNotice = (title, content, image) => {
@@ -82,12 +118,31 @@ const AdminPanel = () => {
       estado: 'Activa',
       image
     };
-    setNoticias(prev => {
-      const updated = [nuevaNoticia, ...prev];
-      localStorage.setItem('noticias', JSON.stringify(updated.filter(n => !noticiasIniciales.some(init => init.id === n.id))));
-      return updated;
-    });
-    setAddModalVisible(false);
+    (async () => {
+      try {
+        const res = await fetch('http://localhost:4000/api/noticias', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(nuevaNoticia)
+        });
+        if (!res.ok) throw new Error('Create failed');
+        const created = await res.json();
+        setNoticias(prev => {
+          const updated = [created, ...prev];
+          try { localStorage.setItem('noticias', JSON.stringify(updated)); } catch (e) {}
+          return updated;
+        });
+      } catch (err) {
+        // fallback local
+        setNoticias(prev => {
+          const updated = [nuevaNoticia, ...prev];
+          try { localStorage.setItem('noticias', JSON.stringify(updated)); } catch (e) {}
+          return updated;
+        });
+      } finally {
+        setAddModalVisible(false);
+      }
+    })();
   };
 
   const handleOpenEdit = (id) => {
@@ -99,14 +154,31 @@ const AdminPanel = () => {
   };
 
   const handleEditSubmit = (id, title, content, image) => {
-    setNoticias(prev => {
-      const updated = prev.map(n =>
-        n.id === id ? { ...n, title, content, image } : n
-      );
-      localStorage.setItem('noticias', JSON.stringify(updated.filter(n => !noticiasIniciales.some(init => init.id === n.id))));
-      return updated;
-    });
-    setEditModalVisible(false);
+    (async () => {
+      try {
+        const res = await fetch(`http://localhost:4000/api/noticias/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title, content, image })
+        });
+        if (!res.ok) throw new Error('Update failed');
+        const updatedNot = await res.json();
+        setNoticias(prev => {
+          const updated = prev.map(n => n.id === id ? updatedNot : n);
+          try { localStorage.setItem('noticias', JSON.stringify(updated)); } catch (e) {}
+          return updated;
+        });
+      } catch (err) {
+        // fallback local
+        setNoticias(prev => {
+          const updated = prev.map(n => n.id === id ? { ...n, title, content, image } : n);
+          try { localStorage.setItem('noticias', JSON.stringify(updated)); } catch (e) {}
+          return updated;
+        });
+      } finally {
+        setEditModalVisible(false);
+      }
+    })();
   };
 
   const showSection = (section) => {

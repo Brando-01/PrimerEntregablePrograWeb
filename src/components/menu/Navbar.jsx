@@ -3,7 +3,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../assets/juego.css';
 import '../../assets/magic-theme.css'; // ✅ Tema mágico
-import { games } from '../data/games';
+import { useGame } from '../context/GameContext';
 import { isAdminSession, getUserSession, isLoggedIn } from '../../utils/session';
 
 const Navbar = ({
@@ -25,6 +25,8 @@ const Navbar = ({
 
   // ...existing code...
   
+  const { games } = useGame();
+
   // Elementos y contador por elemento
   const elements = [
     'Todos los Elementos',
@@ -37,7 +39,7 @@ const Navbar = ({
   ];
 
   const countByElement = (element) => {
-    return element === 'Todos los Elementos' ? games.length : games.filter(g => g.platform === element).length;
+    return element === 'Todos los Elementos' ? (games ? games.length : 0) : (games ? games.filter(g => g.platform === element).length : 0);
   };
 
   // Resetear todos los filtros

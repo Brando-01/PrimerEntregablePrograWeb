@@ -1,5 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { games as initialGames } from '../data/games';
+
+// API base URL: use Vite env var `VITE_API_URL` when available, otherwise fallback
+// to localhost:3001 which is where the backend in this workspace listens.
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 const GameContext = createContext();
 
@@ -14,13 +17,33 @@ export const GameProvider = ({ children }) => {
         console.log('🔮 Poderes cargados desde localStorage:', parsed.length);
         return parsed;
       }
-      console.log('✨ Cargando poderes iniciales desde datos mágicos');
-      return initialGames;
     } catch (error) {
       console.error('❌ Error cargando poderes:', error);
-      return initialGames;
     }
+    // start empty and fetch from backend on mount (do not bundle static data)
+    return [];
   });
+
+  // Fetch games from backend on mount
+  useEffect(() => {
+    let mounted = true;
+    const fetchGames = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/games`);
+        if (!res.ok) throw new Error('Fetch failed');
+        const data = await res.json();
+        if (mounted && Array.isArray(data)) {
+          setGames(data);
+          try { localStorage.setItem(GAMES_STORAGE_KEY, JSON.stringify(data)); } catch (e) {}
+          console.log('✅ Juegos cargados desde backend');
+        }
+      } catch (err) {
+        console.warn('⚠️ No se pudo cargar juegos desde backend, usando datos locales', err.message);
+      }
+    };
+    fetchGames();
+    return () => { mounted = false; };
+  }, []);
 
   useEffect(() => {
     try {
@@ -31,41 +54,94 @@ export const GameProvider = ({ children }) => {
     }
   }, [games]);
 
-  const addGame = (gameData) => {
-    const newGame = {
-      ...gameData,
-      id: Math.max(...games.map(g => g.id), 0) + 1,
-      reviews: gameData.reviews || [],
-      rating: gameData.rating || 0,
-      stock: gameData.stock || 10,
-      isActive: gameData.isActive !== undefined ? gameData.isActive : true,
-      sku: gameData.sku || `PODER-${Date.now()}`,
-      featured: gameData.featured || false
-    };
-
-    setGames(prev => {
-      const newGames = [newGame, ...prev];
-      console.log('✨ Nuevo poder agregado:', newGame.title);
-      return newGames;
-    });
+  const addGame = async (gameData) => {
+    try {
+      const res = await fetch(`${API_BASE}/api/games`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(gameData)
+      });
+      if (!res.ok) throw new Error('Failed to create on backend');
+      const created = await res.json();
+      setGames(prev => [created, ...prev]);
+      try { localStorage.setItem(GAMES_STORAGE_KEY, JSON.stringify([created, ...games])); } catch (e) {}
+      console.log('✨ Nuevo poder agregado (backend):', created.title);
+      return created;
+    } catch (err) {
+      console.error('❌ Error creando poder en backend:', err.message);
+      // fallback: create locally
+      const newGame = {
+        ...gameData,
+        id: Math.max(...games.map(g => g.id), 0) + 1,
+        reviews: gameData.reviews || [],
+        rating: gameData.rating || 0,
+        stock: gameData.stock || 10,
+        isActive: gameData.isActive !== undefined ? gameData.isActive : true,
+        sku: gameData.sku || `PODER-${Date.now()}`,
+        featured: gameData.featured || false
+      };
+      setGames(prev => [newGame, ...prev]);
+      return newGame;
+    }
   };
 
-  const updateGame = (id, gameData) => {
-    setGames(prev => {
-      const updatedGames = prev.map(game => 
-        game.id === id ? { ...game, ...gameData } : game
-      );
-      console.log('✏️ Poder actualizado:', id, gameData);
-      return updatedGames;
-    });
+  const updateGame = async (id, gameData) => {
+    // Try to update on backend first, fallback to local update
+    try {
+      const res = await fetch(`${API_BASE}/api/games/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(gameData)
+      });
+      if (!res.ok) throw new Error('Backend update failed');
+      const updated = await res.json();
+      setGames(prev => {
+        const updatedGames = prev.map(game => game.id === updated.id ? updated : game);
+        try { localStorage.setItem(GAMES_STORAGE_KEY, JSON.stringify(updatedGames)); } catch (e) {}
+        return updatedGames;
+      });
+      console.log('✏️ Poder actualizado (backend):', id);
+      return updated;
+    } catch (err) {
+      // fallback: update locally and return updated local object
+      let updatedLocal = null;
+      setGames(prev => {
+        const updatedGames = prev.map(game => {
+          if (game.id === id) {
+            updatedLocal = { ...game, ...gameData };
+            return updatedLocal;
+          }
+          return game;
+        });
+        try { localStorage.setItem(GAMES_STORAGE_KEY, JSON.stringify(updatedGames)); } catch (e) {}
+        console.log('✏️ Poder actualizado (local fallback):', id, gameData);
+        return updatedGames;
+      });
+      return updatedLocal;
+    }
   };
 
-  const deleteGame = (id) => {
-    setGames(prev => {
-      const filteredGames = prev.filter(game => game.id !== id);
-      console.log('🗑️ Poder eliminado:', id);
-      return filteredGames;
-    });
+  const deleteGame = async (id) => {
+    // Try backend delete first, fallback to local removal
+    try {
+      const res = await fetch(`${API_BASE}/api/games/${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Backend delete failed');
+      setGames(prev => {
+        const filteredGames = prev.filter(game => game.id !== id);
+        try { localStorage.setItem(GAMES_STORAGE_KEY, JSON.stringify(filteredGames)); } catch (e) {}
+        console.log('🗑️ Poder eliminado (backend):', id);
+        return filteredGames;
+      });
+      return true;
+    } catch (err) {
+      setGames(prev => {
+        const filteredGames = prev.filter(game => game.id !== id);
+        try { localStorage.setItem(GAMES_STORAGE_KEY, JSON.stringify(filteredGames)); } catch (e) {}
+        console.log('🗑️ Poder eliminado (local fallback):', id);
+        return filteredGames;
+      });
+      return false;
+    }
   };
 
   const toggleGameStatus = (id) => {

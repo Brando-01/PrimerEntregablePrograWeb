@@ -1,24 +1,45 @@
 import React, { useEffect, useState } from 'react';
 import '../../assets/juego.css';
-import { noticiasIniciales } from '../data/noticias';
-
 const Carousel = () => {
   const [noticias, setNoticias] = useState([]);
 
   useEffect(() => {
-    const loadNoticias = () => {
-      const storedNoticias = JSON.parse(localStorage.getItem('noticias') || '[]');
-      setNoticias([...noticiasIniciales, ...storedNoticias]);
+    let mounted = true;
+    const loadNoticias = async () => {
+      try {
+        const res = await fetch('http://localhost:4000/api/noticias');
+        if (!res.ok) throw new Error('Fetch noticias failed');
+        const data = await res.json();
+        if (mounted && Array.isArray(data)) {
+          setNoticias(data);
+          try { localStorage.setItem('noticias', JSON.stringify(data)); } catch (e) {}
+          return;
+        }
+      } catch (err) {
+        console.warn('⚠️ No se pudieron cargar noticias desde backend:', err.message);
+      }
+
+      // Fallback to localStorage only (no bundled data files)
+      try {
+        const storedNoticias = JSON.parse(localStorage.getItem('noticias') || '[]');
+        if (mounted) setNoticias(storedNoticias);
+      } catch (e) {
+        if (mounted) setNoticias([]);
+      }
     };
+
     loadNoticias();
 
     const handleStorage = (e) => {
       if (e.key === 'noticias') {
-        loadNoticias();
+        try { setNoticias(JSON.parse(localStorage.getItem('noticias') || '[]')); } catch (e) { setNoticias([]); }
       }
     };
     window.addEventListener('storage', handleStorage);
-    return () => window.removeEventListener('storage', handleStorage);
+    return () => {
+      mounted = false;
+      window.removeEventListener('storage', handleStorage);
+    };
   }, []);
 
   return (

@@ -19,6 +19,27 @@ export const OrderProvider = ({ children }) => {
     return [];
   });
 
+  // Fetch orders from backend on mount
+  useEffect(() => {
+    let mounted = true;
+    const fetchOrders = async () => {
+      try {
+        const res = await fetch('http://localhost:4000/api/orders');
+        if (!res.ok) throw new Error('Fetch orders failed');
+        const data = await res.json();
+        if (mounted && Array.isArray(data)) {
+          setOrders(data);
+          try { localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(data)); } catch (e) {}
+          console.log('✅ Órdenes cargadas desde backend');
+        }
+      } catch (err) {
+        console.warn('⚠️ No se pudieron cargar órdenes desde backend:', err.message);
+      }
+    };
+    fetchOrders();
+    return () => { mounted = false; };
+  }, []);
+
   const [currentOrder, setCurrentOrder] = useState(null);
 
   useEffect(() => {
@@ -30,27 +51,33 @@ export const OrderProvider = ({ children }) => {
     }
   }, [orders]);
 
-  const addOrder = (order) => {
+  const addOrder = async (order) => {
     console.log('🔄 Agregando orden al contexto:', order.id);
-    
-    const orderExists = orders.some(existingOrder => existingOrder.id === order.id);
-    if (orderExists) {
-      console.warn('⚠️ La orden ya existe, actualizando...');
-      setOrders(prevOrders => 
-        prevOrders.map(existingOrder => 
-          existingOrder.id === order.id ? order : existingOrder
-        )
-      );
-    } else {
-      setOrders(prevOrders => {
-        const newOrders = [order, ...prevOrders];
-        console.log('📦 Nuevo estado de órdenes:', newOrders.length);
-        return newOrders;
+    try {
+      const res = await fetch('http://localhost:4000/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(order)
       });
+      if (!res.ok) throw new Error('Failed to create order on backend');
+      const created = await res.json();
+      setOrders(prevOrders => [created, ...prevOrders]);
+      try { localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify([created, ...orders])); } catch (e) {}
+      setCurrentOrder(created);
+      console.log('✅ Orden creada en backend y agregada al contexto:', created.id);
+      return created;
+    } catch (err) {
+      console.warn('⚠️ No se pudo crear orden en backend, guardando localmente:', err.message);
+      const orderExists = orders.some(existingOrder => existingOrder.id === order.id);
+      if (orderExists) {
+        setOrders(prevOrders => prevOrders.map(existingOrder => existingOrder.id === order.id ? order : existingOrder));
+      } else {
+        setOrders(prevOrders => [order, ...prevOrders]);
+      }
+      setCurrentOrder(order);
+      try { localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify([order, ...orders])); } catch (e) {}
+      return order;
     }
-    
-    setCurrentOrder(order);
-    console.log('✅ Orden agregada correctamente');
   };
 
   const clearCurrentOrder = () => {
